@@ -198,3 +198,8 @@ function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
   }
   return result === 0;
 }
+
+export { 
+  hashPassword, 
+  verifyPassword
+}
