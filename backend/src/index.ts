@@ -25,8 +25,8 @@ app.get('/test', (c) => {
   })
 }); 
 
-app.route(`/api/${version}/user`, userRouter)
+app.route(`/api/${version}/user/`, userRouter)
 
-app.route(`/api/${version}/blog`, blogRouter)
+app.route(`/api/${version}/blog/`, blogRouter)
 
 export default app

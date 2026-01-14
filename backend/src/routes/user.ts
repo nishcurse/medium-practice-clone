@@ -1,5 +1,5 @@
 import { Hono } from 'hono'; 
-import { PrismaClient } from '../generated/prisma/client'
+import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { sign, verify, decode } from 'hono/jwt'
 import { hashPassword, verifyPassword } from '../utils/passUtils'
@@ -29,7 +29,9 @@ userRouter.post('/signup', async (c) => {
     ).$extends(withAccelerate()); 
     const {name , email, password} = body as SignupBody; 
     const hashpassword = await hashPassword(password);
+    console.log('Hashed Password:', hashpassword);
     try {
+        console.log('creating user with email:', email);
         const user = await prisma.user.create({
             data: {
                 name: name, 
@@ -37,11 +39,13 @@ userRouter.post('/signup', async (c) => {
                 password: hashpassword
             }
         })
+        console.log('created user:', user);
         return c.json({
             message: 'User Created Successfully', 
             token : await sign({userId: user.id}, c.env.JWT_SECRET)
         })
     }catch(e){
+        console.log(e, c.env.DATABASE_URL); 
         c.status(403);
         return c.json({
             error: 'Error Creating User'
@@ -68,10 +72,13 @@ userRouter.post('/signin', async (c) => {
                 email: email
             }
         })
+        console.log(user);
         const isValid = await verifyPassword(password, user.password);
+        console.log(isValid);
         if(!isValid){
             throw new Error('Invalid Creds Sweety!'); 
         }else{
+            console.log('Signin Successful');
             return c.json({
                 message: 'Signin Successful', 
                 token : await sign({userId: user.id}, c.env.JWT_SECRET) 
@@ -79,7 +86,7 @@ userRouter.post('/signin', async (c) => {
         }
 
     }catch(e){
-        c.status(403); 
+        c.status(403);      
         return c.json({
             error: 'Invalid Creds Sweety!'
         }); 
